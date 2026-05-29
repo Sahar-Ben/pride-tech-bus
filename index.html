@@ -5,77 +5,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pride Tech Bus Check-in</title>
   <style>
-    :root { --bg:#f7f7fb; --card:#fff; --text:#15151f; --muted:#666; --accent:#6b3df4; --danger:#b42318; --ok:#067647; --border:#ddd; }
+    :root {
+      --bg:#f5f3ff;
+      --bg2:#eefdf8;
+      --card:#ffffff;
+      --text:#171728;
+      --muted:#626276;
+      --accent:#6d28d9;
+      --accent2:#0f766e;
+      --danger:#b42318;
+      --ok:#047857;
+      --warn:#b45309;
+      --border:#ded8f6;
+      --shadow:0 8px 24px rgba(58, 33, 108, .08);
+    }
     * { box-sizing: border-box; }
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); }
-    header { position:sticky; top:0; z-index:5; background:var(--card); padding:14px; border-bottom:1px solid var(--border); box-shadow:0 1px 8px rgba(0,0,0,.04); }
-    h1 { margin:0 0 10px; font-size:22px; }
+    body {
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:linear-gradient(145deg,var(--bg),var(--bg2));
+      color:var(--text);
+      min-height:100vh;
+    }
+    header {
+      position:sticky;
+      top:0;
+      z-index:5;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(10px);
+      padding:14px;
+      border-bottom:1px solid var(--border);
+      box-shadow:0 2px 14px rgba(54, 42, 102, .08);
+    }
+    h1 { margin:0 0 4px; font-size:24px; letter-spacing:-.02em; }
+    .subtitle { color:var(--muted); font-size:13px; margin-bottom:12px; }
     .toolbar { display:grid; gap:10px; grid-template-columns:1fr; }
-    input, button { font:inherit; border-radius:12px; border:1px solid var(--border); padding:12px; }
-    input { width:100%; background:white; }
-    button { background:white; cursor:pointer; font-weight:700; }
+    input, button { font:inherit; border-radius:14px; border:1px solid var(--border); padding:13px; }
+    input { width:100%; background:white; box-shadow:0 1px 0 rgba(0,0,0,.02); }
+    input:focus { outline:2px solid rgba(109,40,217,.18); border-color:var(--accent); }
+    button { background:white; cursor:pointer; font-weight:800; color:var(--text); }
     button.primary { background:var(--accent); border-color:var(--accent); color:white; }
-    button.active-filter { background:var(--accent); border-color:var(--accent); color:white; }
     button.success { background:var(--ok); border-color:var(--ok); color:white; }
-    button.danger { color:var(--danger); border-color:#f3b4af; }
-    button.small { padding:9px 10px; font-size:14px; }
-    main { padding:14px; max-width:900px; margin:auto; }
-    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0; }
-    .stat { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:10px; text-align:center; }
-    .stat b { display:block; font-size:20px; }
-    .person { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:14px; margin:10px 0; box-shadow:0 1px 5px rgba(0,0,0,.03); }
-    .person.arrived { opacity:.55; }
-    .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-    .name { font-size:19px; font-weight:800; }
-    .phone { color:var(--muted); margin-top:4px; font-size:16px; direction:ltr; unicode-bidi:embed; }
+    button.warning { background:#fff7ed; color:var(--warn); border-color:#fed7aa; }
+    button.danger { color:var(--danger); border-color:#fecaca; background:#fff7f7; }
+    button.small { padding:9px 11px; font-size:14px; }
+    main { padding:14px; max-width:920px; margin:auto; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:14px 0; }
+    .stat {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:13px 8px;
+      text-align:center;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      user-select:none;
+    }
+    .stat b { display:block; font-size:24px; line-height:1; margin-bottom:5px; }
+    .stat.active { color:white; background:linear-gradient(135deg,var(--accent),#8b5cf6); border-color:transparent; }
+    .stat.pending.active { background:linear-gradient(135deg,#0f766e,#14b8a6); }
+    .stat.arrived.active { background:linear-gradient(135deg,#047857,#22c55e); }
+    .panel { background:rgba(255,255,255,.72); border:1px solid var(--border); border-radius:22px; padding:12px; box-shadow:var(--shadow); margin-top:12px; }
+    .person {
+      background:var(--card);
+      border:1px solid #ebe7fb;
+      border-left:6px solid var(--accent2);
+      border-radius:18px;
+      padding:14px;
+      margin:10px 0;
+      box-shadow:0 3px 14px rgba(42, 32, 80, .06);
+    }
+    .person.arrived { border-left-color:var(--ok); background:#f0fdf4; }
+    .person.waiting { border-left-color:var(--warn); background:#fffbeb; }
+    .row { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .name { font-size:19px; font-weight:900; letter-spacing:-.01em; }
+    .phone { color:var(--muted); margin-top:5px; font-size:16px; direction:ltr; unicode-bidi:embed; }
+    .tag { display:inline-block; margin-top:7px; padding:4px 9px; border-radius:999px; font-size:12px; font-weight:800; background:#eef2ff; color:#4338ca; }
+    .tag.waiting { background:#ffedd5; color:#9a3412; }
     .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-    .section-title { margin:24px 0 8px; font-size:18px; }
-    .add-box { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:14px; display:grid; gap:10px; }
+    .section-title { margin:22px 0 8px; font-size:20px; letter-spacing:-.02em; }
+    .add-box { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:14px; display:grid; gap:10px; box-shadow:var(--shadow); }
     .hint { color:var(--muted); font-size:13px; line-height:1.35; }
-    .hidden { display:none; }
-    @media (min-width:700px){ .toolbar { grid-template-columns:1fr auto auto auto; } .add-box { grid-template-columns:1fr 1fr auto; align-items:center; } }
+    .empty { text-align:center; padding:20px; }
+    @media (min-width:700px){ .add-box { grid-template-columns:1fr 1fr auto; align-items:center; } }
   </style>
 </head>
 <body>
   <header>
     <h1>Pride Tech Bus Check-in</h1>
+    <div class="subtitle">Search, confirm arrivals, and manage the waiting list.</div>
     <div class="toolbar">
       <input id="search" placeholder="Search by name or phone..." autocomplete="off" />
-      <button id="showPending" class="small active-filter">Unarrived</button>
-      <button id="showArrived" class="small">Arrived</button>
-      <button id="showAll" class="small">All</button>
     </div>
   </header>
 
   <main>
     <div class="stats">
-      <div class="stat"><b id="pendingCount">0</b>Pending</div>
-      <div class="stat"><b id="arrivedCount">0</b>Arrived</div>
-      <div class="stat"><b id="totalCount">0</b>Total</div>
+      <div id="filterPending" class="stat pending active"><b id="pendingCount">0</b>Pending</div>
+      <div id="filterArrived" class="stat arrived"><b id="arrivedCount">0</b>Arrived</div>
+      <div id="filterAll" class="stat"><b id="totalCount">0</b>All</div>
     </div>
 
     <div id="status" class="hint"></div>
-    <div id="list"></div>
 
-    <h2 class="section-title">Add someone manually / waiting list</h2>
+    <h2 class="section-title" id="mainTitle">Pending list</h2>
+    <div class="panel" id="list"></div>
+
+    <h2 class="section-title">Waiting list</h2>
     <div class="add-box">
       <input id="newName" placeholder="Full name" />
       <input id="newPhone" placeholder="Phone" inputmode="tel" />
-      <button id="addPerson" class="primary">Add</button>
+      <button id="addPerson" class="primary">Add to waiting</button>
     </div>
+    <div class="panel" id="waitingList"></div>
+
     <p class="hint">
-      This page saves check-ins, deletions, and manual additions on this iPad/browser only. To reset everything, clear this site’s browser data or change the DATA_VERSION number in the code.
+      Check-ins, deletions, and waiting list changes are saved on this iPad/browser only. Refresh the page to pull the latest published Google Sheet list.
     </p>
   </main>
 
 <script>
-// === SETTINGS ===
-// Published Google Sheets CSV for the Pride Tech bus list.
-// Update the Google Sheet, then refresh this page to pull the latest published CSV.
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7rhjt4HNMhz3tUzZMcFaqoxXVNHnO6Qg8mBkBcu6dmMOCGIP18OaEsTQXwgQ06uyqpgl-P5a9SxoO/pub?gid=1845266870&single=true&output=csv";
-
-// Increase this if you want to force everyone using this page to reload fresh local state.
-const DATA_VERSION = "2026-05-29-v1";
+const DATA_VERSION = "2026-05-29-v2";
 const STORAGE_KEY = `pride-tech-bus-${DATA_VERSION}`;
 
 let people = [];
@@ -83,6 +134,7 @@ let currentFilter = "pending"; // pending, arrived, all
 
 function normalizePhone(phone) { return String(phone || "").trim(); }
 function makeId(name, phone) { return `${String(name).trim().toLowerCase()}|${normalizePhone(phone).replace(/\D/g,"")}`; }
+function safeArg(s) { return String(s || "").replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
 
 function parseCSV(text) {
   const rows = [];
@@ -111,7 +163,7 @@ function rowsToPeople(rows) {
   return rows.slice(1).map(r => {
     const name = String(r[fallbackName] || "").trim();
     const phone = normalizePhone(r[fallbackPhone]);
-    return { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:false };
+    return { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:false, waiting:false };
   }).filter(p => p.name || p.phone);
 }
 
@@ -119,9 +171,9 @@ function mergeWithSaved(freshPeople) {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
   if (!saved) return freshPeople;
   const byId = new Map(saved.map(p => [p.id, p]));
-  const merged = freshPeople.map(p => ({ ...p, ...(byId.get(p.id) || {}) }));
-  const manual = saved.filter(p => p.manual && !merged.some(x => x.id === p.id));
-  return [...merged, ...manual];
+  const merged = freshPeople.map(p => ({ ...p, ...(byId.get(p.id) || {}) , manual:false, waiting:false }));
+  const localOnly = saved.filter(p => (p.manual || p.waiting) && !merged.some(x => x.id === p.id));
+  return [...merged, ...localOnly];
 }
 
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(people)); }
@@ -147,57 +199,88 @@ function copyPhone(phone) {
   navigator.clipboard.writeText(phone).then(() => alert(`Copied: ${phone}`));
 }
 
+function mainPeople() { return people.filter(p => !p.deleted && !p.waiting); }
+function waitingPeople() { return people.filter(p => !p.deleted && p.waiting); }
+
 function render() {
   const q = document.getElementById("search").value.trim().toLowerCase();
-  const visible = people.filter(p => !p.deleted)
+  const filteredMain = mainPeople()
     .filter(p => currentFilter === "all" || (currentFilter === "pending" && !p.arrived) || (currentFilter === "arrived" && p.arrived))
     .filter(p => !q || p.name.toLowerCase().includes(q) || p.phone.toLowerCase().includes(q));
+  const filteredWaiting = waitingPeople()
+    .filter(p => !q || p.name.toLowerCase().includes(q) || p.phone.toLowerCase().includes(q));
 
-  document.getElementById("showPending").classList.toggle("active-filter", currentFilter === "pending");
-  document.getElementById("showArrived").classList.toggle("active-filter", currentFilter === "arrived");
-  document.getElementById("showAll").classList.toggle("active-filter", currentFilter === "all");
+  document.getElementById("filterPending").classList.toggle("active", currentFilter === "pending");
+  document.getElementById("filterArrived").classList.toggle("active", currentFilter === "arrived");
+  document.getElementById("filterAll").classList.toggle("active", currentFilter === "all");
 
-  document.getElementById("pendingCount").textContent = people.filter(p => !p.deleted && !p.arrived).length;
-  document.getElementById("arrivedCount").textContent = people.filter(p => !p.deleted && p.arrived).length;
-  document.getElementById("totalCount").textContent = people.filter(p => !p.deleted).length;
+  document.getElementById("pendingCount").textContent = mainPeople().filter(p => !p.arrived).length;
+  document.getElementById("arrivedCount").textContent = mainPeople().filter(p => p.arrived).length;
+  document.getElementById("totalCount").textContent = mainPeople().length;
+  document.getElementById("mainTitle").textContent = currentFilter === "pending" ? "Pending list" : currentFilter === "arrived" ? "Arrived list" : "All passengers";
 
-  const list = document.getElementById("list");
-  list.innerHTML = visible.map(p => `
+  document.getElementById("list").innerHTML = filteredMain.map(personCard).join("") || `<p class="hint empty">No matching people in this list.</p>`;
+  document.getElementById("waitingList").innerHTML = filteredWaiting.map(waitingCard).join("") || `<p class="hint empty">Waiting list is empty.</p>`;
+  save();
+}
+
+function personCard(p) {
+  return `
     <div class="person ${p.arrived ? "arrived" : ""}">
       <div class="row">
         <div>
           <div class="name">${escapeHtml(p.name || "No name")}</div>
           <div class="phone">${escapeHtml(p.phone || "No phone")}</div>
+          ${p.manual ? `<span class="tag">Moved from waiting list</span>` : ``}
         </div>
-        <button class="${p.arrived ? "" : "success"} small" onclick="toggleArrived('${p.id.replace(/'/g,"\\'")}')">${p.arrived ? "Undo" : "Arrived"}</button>
+        <button class="${p.arrived ? "" : "success"} small" onclick="toggleArrived('${safeArg(p.id)}')">${p.arrived ? "Undo" : "Arrived"}</button>
       </div>
       <div class="actions">
-        <button class="small" onclick="copyPhone('${String(p.phone).replace(/'/g,"\\'")}')">Copy phone</button>
+        <button class="small" onclick="copyPhone('${safeArg(p.phone)}')">Copy phone</button>
         <a href="tel:${encodeURIComponent(p.phone)}"><button class="small">Call</button></a>
-        <button class="danger small" onclick="deletePerson('${p.id.replace(/'/g,"\\'")}')">Delete</button>
+        <button class="danger small" onclick="deletePerson('${safeArg(p.id)}')">Delete</button>
       </div>
-    </div>
-  `).join("") || `<p class="hint">No matching people.</p>`;
-  save();
+    </div>`;
+}
+
+function waitingCard(p) {
+  return `
+    <div class="person waiting">
+      <div class="row">
+        <div>
+          <div class="name">${escapeHtml(p.name || "No name")}</div>
+          <div class="phone">${escapeHtml(p.phone || "No phone")}</div>
+          <span class="tag waiting">Waiting list</span>
+        </div>
+        <button class="warning small" onclick="moveToMain('${safeArg(p.id)}')">Move to list</button>
+      </div>
+      <div class="actions">
+        <button class="small" onclick="copyPhone('${safeArg(p.phone)}')">Copy phone</button>
+        <a href="tel:${encodeURIComponent(p.phone)}"><button class="small">Call</button></a>
+        <button class="danger small" onclick="deletePerson('${safeArg(p.id)}')">Delete</button>
+      </div>
+    </div>`;
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function toggleArrived(id) { const p = people.find(x => x.id === id); if (p) p.arrived = !p.arrived; render(); }
+function moveToMain(id) { const p = people.find(x => x.id === id); if (p) { p.waiting = false; p.manual = true; p.arrived = false; currentFilter = "pending"; render(); } }
 function deletePerson(id) { const p = people.find(x => x.id === id); if (p && confirm(`Delete ${p.name || p.phone}?`)) { p.deleted = true; render(); } }
 
 window.toggleArrived = toggleArrived;
+window.moveToMain = moveToMain;
 window.deletePerson = deletePerson;
 window.copyPhone = copyPhone;
 
 document.getElementById("search").addEventListener("input", render);
-document.getElementById("showPending").addEventListener("click", () => { currentFilter = "pending"; render(); });
-document.getElementById("showArrived").addEventListener("click", () => { currentFilter = "arrived"; render(); });
-document.getElementById("showAll").addEventListener("click", () => { currentFilter = "all"; render(); });
+document.getElementById("filterPending").addEventListener("click", () => { currentFilter = "pending"; render(); });
+document.getElementById("filterArrived").addEventListener("click", () => { currentFilter = "arrived"; render(); });
+document.getElementById("filterAll").addEventListener("click", () => { currentFilter = "all"; render(); });
 document.getElementById("addPerson").addEventListener("click", () => {
   const name = document.getElementById("newName").value.trim();
   const phone = document.getElementById("newPhone").value.trim();
   if (!name && !phone) return alert("Add a name or phone.");
-  const p = { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:true };
+  const p = { id: makeId(name, phone) + `|wait-${Date.now()}`, name, phone, arrived:false, deleted:false, manual:true, waiting:true };
   people.unshift(p);
   document.getElementById("newName").value = "";
   document.getElementById("newPhone").value = "";
