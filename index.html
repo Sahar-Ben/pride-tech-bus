@@ -15,6 +15,7 @@
     input { width:100%; background:white; }
     button { background:white; cursor:pointer; font-weight:700; }
     button.primary { background:var(--accent); border-color:var(--accent); color:white; }
+    button.active-filter { background:var(--accent); border-color:var(--accent); color:white; }
     button.success { background:var(--ok); border-color:var(--ok); color:white; }
     button.danger { color:var(--danger); border-color:#f3b4af; }
     button.small { padding:9px 10px; font-size:14px; }
@@ -32,7 +33,7 @@
     .add-box { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:14px; display:grid; gap:10px; }
     .hint { color:var(--muted); font-size:13px; line-height:1.35; }
     .hidden { display:none; }
-    @media (min-width:700px){ .toolbar { grid-template-columns:1fr auto auto; } .add-box { grid-template-columns:1fr 1fr auto; align-items:center; } }
+    @media (min-width:700px){ .toolbar { grid-template-columns:1fr auto auto auto; } .add-box { grid-template-columns:1fr 1fr auto; align-items:center; } }
   </style>
 </head>
 <body>
@@ -40,8 +41,9 @@
     <h1>Pride Tech Bus Check-in</h1>
     <div class="toolbar">
       <input id="search" placeholder="Search by name or phone..." autocomplete="off" />
-      <button id="showAll" class="small">Show all</button>
-      <button id="showPending" class="small primary">Show only pending</button>
+      <button id="showPending" class="small active-filter">Unarrived</button>
+      <button id="showArrived" class="small">Arrived</button>
+      <button id="showAll" class="small">All</button>
     </div>
   </header>
 
@@ -77,7 +79,7 @@ const DATA_VERSION = "2026-05-29-v1";
 const STORAGE_KEY = `pride-tech-bus-${DATA_VERSION}`;
 
 let people = [];
-let showPendingOnly = true;
+let currentFilter = "pending"; // pending, arrived, all
 
 function normalizePhone(phone) { return String(phone || "").trim(); }
 function makeId(name, phone) { return `${String(name).trim().toLowerCase()}|${normalizePhone(phone).replace(/\D/g,"")}`; }
@@ -148,8 +150,12 @@ function copyPhone(phone) {
 function render() {
   const q = document.getElementById("search").value.trim().toLowerCase();
   const visible = people.filter(p => !p.deleted)
-    .filter(p => !showPendingOnly || !p.arrived)
+    .filter(p => currentFilter === "all" || (currentFilter === "pending" && !p.arrived) || (currentFilter === "arrived" && p.arrived))
     .filter(p => !q || p.name.toLowerCase().includes(q) || p.phone.toLowerCase().includes(q));
+
+  document.getElementById("showPending").classList.toggle("active-filter", currentFilter === "pending");
+  document.getElementById("showArrived").classList.toggle("active-filter", currentFilter === "arrived");
+  document.getElementById("showAll").classList.toggle("active-filter", currentFilter === "all");
 
   document.getElementById("pendingCount").textContent = people.filter(p => !p.deleted && !p.arrived).length;
   document.getElementById("arrivedCount").textContent = people.filter(p => !p.deleted && p.arrived).length;
@@ -184,8 +190,9 @@ window.deletePerson = deletePerson;
 window.copyPhone = copyPhone;
 
 document.getElementById("search").addEventListener("input", render);
-document.getElementById("showAll").addEventListener("click", () => { showPendingOnly = false; render(); });
-document.getElementById("showPending").addEventListener("click", () => { showPendingOnly = true; render(); });
+document.getElementById("showPending").addEventListener("click", () => { currentFilter = "pending"; render(); });
+document.getElementById("showArrived").addEventListener("click", () => { currentFilter = "arrived"; render(); });
+document.getElementById("showAll").addEventListener("click", () => { currentFilter = "all"; render(); });
 document.getElementById("addPerson").addEventListener("click", () => {
   const name = document.getElementById("newName").value.trim();
   const phone = document.getElementById("newPhone").value.trim();
