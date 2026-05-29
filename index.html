@@ -6,139 +6,102 @@
   <title>Pride Tech Bus Check-in</title>
   <style>
     :root {
-      --bg:#f5f3ff;
-      --bg2:#eefdf8;
-      --card:#ffffff;
-      --text:#171728;
-      --muted:#626276;
-      --accent:#6d28d9;
-      --accent2:#0f766e;
-      --danger:#b42318;
-      --ok:#047857;
-      --warn:#b45309;
-      --border:#ded8f6;
-      --shadow:0 8px 24px rgba(58, 33, 108, .08);
+      --bg:#f7f3ff; --bg2:#e9fbff; --card:#ffffff; --text:#141427; --muted:#5d6077;
+      --purple:#7c3aed; --purple2:#a855f7; --purple-soft:#f1e9ff;
+      --green:#059669; --green-soft:#dcfce7; --orange:#f97316; --orange-soft:#fff1e6;
+      --blue:#2563eb; --blue-soft:#e7f0ff; --teal:#0d9488; --pink:#db2777;
+      --red:#dc2626; --red-soft:#fee2e2; --border:#ddd6fe; --shadow:0 14px 34px rgba(59,42,120,.14);
     }
-    * { box-sizing: border-box; }
-    body {
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-      background:linear-gradient(145deg,var(--bg),var(--bg2));
-      color:var(--text);
-      min-height:100vh;
-    }
-    header {
-      position:sticky;
-      top:0;
-      z-index:5;
-      background:rgba(255,255,255,.92);
-      backdrop-filter:blur(10px);
-      padding:14px;
-      border-bottom:1px solid var(--border);
-      box-shadow:0 2px 14px rgba(54, 42, 102, .08);
-    }
-    h1 { margin:0 0 4px; font-size:24px; letter-spacing:-.02em; }
-    .subtitle { color:var(--muted); font-size:13px; margin-bottom:12px; }
-    .toolbar { display:grid; gap:10px; grid-template-columns:1fr; }
-    input, button { font:inherit; border-radius:14px; border:1px solid var(--border); padding:13px; }
-    input { width:100%; background:white; box-shadow:0 1px 0 rgba(0,0,0,.02); }
-    input:focus { outline:2px solid rgba(109,40,217,.18); border-color:var(--accent); }
-    button { background:white; cursor:pointer; font-weight:800; color:var(--text); }
-    button.primary { background:var(--accent); border-color:var(--accent); color:white; }
-    button.success { background:var(--ok); border-color:var(--ok); color:white; }
-    button.warning { background:#fff7ed; color:var(--warn); border-color:#fed7aa; }
-    button.danger { color:var(--danger); border-color:#fecaca; background:#fff7f7; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; background:radial-gradient(circle at top left,#ffe8f5 0,#f7f3ff 32%,#e9fbff 100%); color:var(--text); min-height:100vh; }
+    header { position:sticky; top:0; z-index:10; color:white; background:linear-gradient(135deg,#7c3aed 0%,#2563eb 50%,#0d9488 100%); padding:16px 14px 18px; border-bottom:1px solid rgba(255,255,255,.25); box-shadow:0 12px 28px rgba(37,99,235,.22); }
+    h1 { margin:0 0 4px; font-size:28px; letter-spacing:-.03em; }
+    .subtitle { color:rgba(255,255,255,.88); font-size:14px; line-height:1.35; } .hint { color:var(--muted); font-size:14px; line-height:1.35; }
+    main { padding:14px; max-width:940px; margin:auto; }
+    input, button { font:inherit; border-radius:15px; border:1px solid var(--border); padding:13px; }
+    input { width:100%; background:white; }
+    button { background:white; font-weight:800; cursor:pointer; }
+    button.primary { background:var(--purple); color:white; border-color:var(--purple); }
+    button.success { background:var(--green); color:white; border-color:var(--green); }
+    button.danger { background:var(--red-soft); color:var(--red); border-color:#fecaca; }
     button.small { padding:9px 11px; font-size:14px; }
-    main { padding:14px; max-width:920px; margin:auto; }
-    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:14px 0; }
-    .stat {
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:13px 8px;
-      text-align:center;
-      box-shadow:var(--shadow);
-      cursor:pointer;
-      user-select:none;
-    }
-    .stat b { display:block; font-size:24px; line-height:1; margin-bottom:5px; }
-    .stat.active { color:white; background:linear-gradient(135deg,var(--accent),#8b5cf6); border-color:transparent; }
-    .stat.pending.active { background:linear-gradient(135deg,#0f766e,#14b8a6); }
-    .stat.arrived.active { background:linear-gradient(135deg,#047857,#22c55e); }
-    .panel { background:rgba(255,255,255,.72); border:1px solid var(--border); border-radius:22px; padding:12px; box-shadow:var(--shadow); margin-top:12px; }
-    .person {
-      background:var(--card);
-      border:1px solid #ebe7fb;
-      border-left:6px solid var(--accent2);
-      border-radius:18px;
-      padding:14px;
-      margin:10px 0;
-      box-shadow:0 3px 14px rgba(42, 32, 80, .06);
-    }
-    .person.arrived { border-left-color:var(--ok); background:#f0fdf4; }
-    .person.waiting { border-left-color:var(--warn); background:#fffbeb; }
-    .row { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
-    .name { font-size:19px; font-weight:900; letter-spacing:-.01em; }
-    .phone { color:var(--muted); margin-top:5px; font-size:16px; direction:ltr; unicode-bidi:embed; }
-    .tag { display:inline-block; margin-top:7px; padding:4px 9px; border-radius:999px; font-size:12px; font-weight:800; background:#eef2ff; color:#4338ca; }
-    .tag.waiting { background:#ffedd5; color:#9a3412; }
+    .tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:12px; }
+    .tab { border:1px solid rgba(255,255,255,.7); border-radius:20px; padding:12px 6px; text-align:center; background:rgba(255,255,255,.88); color:#1f2350; box-shadow:0 10px 22px rgba(20,20,60,.16); user-select:none; cursor:pointer; transition:.15s ease; } .tab:active { transform:scale(.98); }
+    .tab b { display:block; font-size:22px; margin-bottom:2px; }
+    .tab.pending.active { background:linear-gradient(135deg,#ffedd5,#fed7aa); border-color:#fdba74; color:#7c2d12; }
+    .tab.arrived.active { background:linear-gradient(135deg,#dcfce7,#bbf7d0); border-color:#86efac; color:#14532d; }
+    .tab.all.active { background:linear-gradient(135deg,#dbeafe,#bfdbfe); border-color:#93c5fd; color:#1e3a8a; }
+    .tab.waiting.active { background:linear-gradient(135deg,#f3e8ff,#ddd6fe); border-color:#c4b5fd; color:#4c1d95; }
+    .toolbar { display:grid; gap:10px; margin:14px 0; }
+    .panel { background:rgba(255,255,255,.82); border:1px solid var(--border); border-radius:24px; padding:12px; box-shadow:var(--shadow); }
+    .section-title { margin:4px 2px 12px; font-size:18px; }
+    .person { background:var(--card); border:1px solid var(--border); border-left:7px solid var(--orange); border-radius:22px; padding:14px; margin:10px 0; box-shadow:0 8px 20px rgba(60,42,100,.09); }
+    .person.arrived { border-left-color:var(--green); background:#f0fdf4; }
+    .person.waiting { border-left-color:var(--purple); background:#fbf9ff; }
+    .row { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; } .person-main { display:flex; gap:12px; align-items:flex-start; } .avatar { flex:0 0 42px; height:42px; border-radius:14px; display:grid; place-items:center; font-weight:900; color:white; background:linear-gradient(135deg,var(--purple),var(--pink)); box-shadow:0 6px 14px rgba(124,58,237,.22); }
+    .name { font-weight:900; font-size:18px; margin-bottom:3px; }
+    .phone { color:var(--muted); direction:ltr; text-align:left; }
     .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-    .section-title { margin:22px 0 8px; font-size:20px; letter-spacing:-.02em; }
-    .add-box { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:14px; display:grid; gap:10px; box-shadow:var(--shadow); }
-    .hint { color:var(--muted); font-size:13px; line-height:1.35; }
-    .empty { text-align:center; padding:20px; }
-    @media (min-width:700px){ .add-box { grid-template-columns:1fr 1fr auto; align-items:center; } }
+    .tag { display:inline-block; margin-top:7px; padding:4px 9px; border-radius:999px; font-size:12px; font-weight:900; background:#eef2ff; color:#4338ca; }
+    .add-box { background:white; border:1px solid var(--border); border-radius:22px; padding:14px; display:grid; gap:10px; box-shadow:var(--shadow); margin-bottom:12px; }
+    .empty { text-align:center; padding:24px 12px; }
+    footer { padding:10px 2px 26px; }
+    @media (min-width:720px){ .add-box { grid-template-columns:1fr 1fr auto; align-items:center; } }
+    @media (max-width:520px){ .tabs { grid-template-columns:repeat(2,1fr); } .tab b { font-size:20px; } }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Pride Tech Bus Check-in</h1>
-    <div class="subtitle">Search, confirm arrivals, and manage the waiting list.</div>
-    <div class="toolbar">
-      <input id="search" placeholder="Search by name or phone..." autocomplete="off" />
-    </div>
-  </header>
+<header>
+  <h1>Pride Tech Bus Check-in</h1>
+  <div class="subtitle" id="status">Loading list from Google Sheets...</div>
+  <div class="tabs">
+    <div id="tabPending" class="tab pending active"><b id="pendingCount">0</b>Pending</div>
+    <div id="tabArrived" class="tab arrived"><b id="arrivedCount">0</b>Arrived</div>
+    <div id="tabAll" class="tab all"><b id="totalCount">0</b>All</div>
+    <div id="tabWaiting" class="tab waiting"><b id="waitingCount">0</b>Waiting list</div>
+  </div>
+</header>
 
-  <main>
-    <div class="stats">
-      <div id="filterPending" class="stat pending active"><b id="pendingCount">0</b>Pending</div>
-      <div id="filterArrived" class="stat arrived"><b id="arrivedCount">0</b>Arrived</div>
-      <div id="filterAll" class="stat"><b id="totalCount">0</b>All</div>
-    </div>
+<main>
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="Search by name or phone" />
+  </div>
 
-    <div id="status" class="hint"></div>
+  <section id="mainSection" class="panel">
+    <h2 class="section-title" id="mainTitle">Pending</h2>
+    <div id="list"></div>
+  </section>
 
-    <h2 class="section-title" id="mainTitle">Pending list</h2>
-    <div class="panel" id="list"></div>
-
-    <h2 class="section-title">Waiting list</h2>
+  <section id="waitingSection" style="display:none;">
     <div class="add-box">
-      <input id="newName" placeholder="Full name" />
-      <input id="newPhone" placeholder="Phone" inputmode="tel" />
-      <button id="addPerson" class="primary">Add to waiting</button>
+      <input id="newName" placeholder="New person name" />
+      <input id="newPhone" placeholder="Phone number" inputmode="tel" />
+      <button id="addPerson" class="primary">Add to waiting list</button>
     </div>
-    <div class="panel" id="waitingList"></div>
+    <div class="panel">
+      <h2 class="section-title">Waiting list</h2>
+      <div id="waitingList"></div>
+    </div>
+  </section>
 
-    <p class="hint">
-      Check-ins, deletions, and waiting list changes are saved on this iPad/browser only. Refresh the page to pull the latest published Google Sheet list.
-    </p>
-  </main>
+  <footer class="hint">
+    Only rows with Status = Approved are loaded from Google Sheets. Check-ins, deletions, and waiting list changes are saved on this iPad/browser only.
+  </footer>
+</main>
 
 <script>
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7rhjt4HNMhz3tUzZMcFaqoxXVNHnO6Qg8mBkBcu6dmMOCGIP18OaEsTQXwgQ06uyqpgl-P5a9SxoO/pub?gid=1845266870&single=true&output=csv";
-const DATA_VERSION = "2026-05-29-v3-approved-only";
-const STORAGE_KEY = `pride-tech-bus-${DATA_VERSION}`;
-
+const STORAGE_KEY = "pride-tech-bus-v5";
 let people = [];
-let currentFilter = "pending"; // pending, arrived, all
+let currentView = "pending";
 
-function normalizePhone(phone) { return String(phone || "").trim(); }
-function makeId(name, phone) { return `${String(name).trim().toLowerCase()}|${normalizePhone(phone).replace(/\D/g,"")}`; }
-function safeArg(s) { return String(s || "").replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
+function normalizePhone(v) { return String(v || "").replace(/\.0$/, "").trim(); }
+function makeId(name, phone) { return `${String(name).trim().toLowerCase()}|${normalizePhone(phone).replace(/\D/g, "")}`; }
+function escapeHtml(s) { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function safeJs(s) { return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
 
 function parseCSV(text) {
-  const rows = [];
-  let row = [], value = "", inQuotes = false;
+  const rows = []; let row = [], value = "", inQuotes = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i], n = text[i + 1];
     if (c === '"' && inQuotes && n === '"') { value += '"'; i++; }
@@ -153,52 +116,46 @@ function parseCSV(text) {
   return rows;
 }
 
+function findHeader(headers, options) {
+  return headers.findIndex(h => options.some(opt => h === opt || h.includes(opt)));
+}
+
 function rowsToPeople(rows) {
   if (!rows.length) return [];
   const headers = rows[0].map(h => String(h).trim().toLowerCase());
-  const nameIndex = headers.findIndex(h => ["name","full name","שם","שם מלא"].includes(h) || h.includes("name") || h.includes("שם"));
-  const phoneIndex = headers.findIndex(h => ["phone","mobile","telephone","טלפון","נייד"].includes(h) || h.includes("phone") || h.includes("טל") || h.includes("נייד"));
-  const statusIndex = headers.findIndex(h => ["status","סטטוס"].includes(h) || h.includes("status") || h.includes("סטטוס"));
+  const nameIndex = findHeader(headers, ["name", "full name", "שם", "שם מלא"]);
+  const phoneIndex = findHeader(headers, ["phone", "mobile", "telephone", "טלפון", "נייד"]);
+  const statusIndex = findHeader(headers, ["status", "סטטוס"]);
   const fallbackName = nameIndex >= 0 ? nameIndex : 0;
   const fallbackPhone = phoneIndex >= 0 ? phoneIndex : 1;
-
-  return rows.slice(1)
-    .filter(r => {
-      // Only approved rows from the Google Sheet are allowed into the main list.
-      // Cancel / cancelled / empty / any other status are hidden automatically.
-      if (statusIndex < 0) return true;
-      const status = String(r[statusIndex] || "").trim().toLowerCase();
-      return status === "approved";
-    })
-    .map(r => {
-      const name = String(r[fallbackName] || "").trim();
-      const phone = normalizePhone(r[fallbackPhone]);
-      return { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:false, waiting:false };
-    })
-    .filter(p => p.name || p.phone);
+  return rows.slice(1).filter(r => {
+    if (statusIndex < 0) return true;
+    return String(r[statusIndex] || "").trim().toLowerCase() === "approved";
+  }).map(r => {
+    const name = String(r[fallbackName] || "").trim();
+    const phone = normalizePhone(r[fallbackPhone]);
+    return { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:false, waiting:false };
+  }).filter(p => p.name || p.phone).sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" }));
 }
 
 function mergeWithSaved(freshPeople) {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
   if (!saved) return freshPeople;
   const byId = new Map(saved.map(p => [p.id, p]));
-  const merged = freshPeople.map(p => ({ ...p, ...(byId.get(p.id) || {}) , manual:false, waiting:false }));
+  const merged = freshPeople.map(p => ({ ...p, ...(byId.get(p.id) || {}), manual:false, waiting:false }));
   const localOnly = saved.filter(p => (p.manual || p.waiting) && !merged.some(x => x.id === p.id));
-  return [...merged, ...localOnly];
+  return sortByName([...merged, ...localOnly]);
 }
 
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(people)); }
-
 async function loadPeople() {
   const status = document.getElementById("status");
   try {
-    status.textContent = "Loading list from Google Sheets...";
     const res = await fetch(CSV_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("Could not load CSV. Publish the sheet to the web first.");
-    const csv = await res.text();
-    const fresh = rowsToPeople(parseCSV(csv));
+    if (!res.ok) throw new Error("Could not load CSV.");
+    const fresh = rowsToPeople(parseCSV(await res.text()));
     people = mergeWithSaved(fresh);
-    status.textContent = `Loaded ${fresh.length} people from Google Sheets.`;
+    status.textContent = `Loaded ${fresh.length} approved people from Google Sheets.`;
   } catch (err) {
     people = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     status.textContent = `Google Sheets was not loaded. Using saved local list only. ${err.message}`;
@@ -206,98 +163,71 @@ async function loadPeople() {
   render();
 }
 
-function copyPhone(phone) {
-  navigator.clipboard.writeText(phone).then(() => alert(`Copied: ${phone}`));
-}
-
-function mainPeople() { return people.filter(p => !p.deleted && !p.waiting); }
-function waitingPeople() { return people.filter(p => !p.deleted && p.waiting); }
-
-function render() {
+function mainPeople() { return sortByName(people.filter(p => !p.deleted && !p.waiting)); }
+function waitingPeople() { return sortByName(people.filter(p => !p.deleted && p.waiting)); }
+function filteredMain() {
   const q = document.getElementById("search").value.trim().toLowerCase();
-  const filteredMain = mainPeople()
-    .filter(p => currentFilter === "all" || (currentFilter === "pending" && !p.arrived) || (currentFilter === "arrived" && p.arrived))
+  return mainPeople()
+    .filter(p => currentView === "all" || (currentView === "pending" && !p.arrived) || (currentView === "arrived" && p.arrived))
     .filter(p => !q || p.name.toLowerCase().includes(q) || p.phone.toLowerCase().includes(q));
-  const filteredWaiting = waitingPeople()
-    .filter(p => !q || p.name.toLowerCase().includes(q) || p.phone.toLowerCase().includes(q));
-
-  document.getElementById("filterPending").classList.toggle("active", currentFilter === "pending");
-  document.getElementById("filterArrived").classList.toggle("active", currentFilter === "arrived");
-  document.getElementById("filterAll").classList.toggle("active", currentFilter === "all");
-
-  document.getElementById("pendingCount").textContent = mainPeople().filter(p => !p.arrived).length;
-  document.getElementById("arrivedCount").textContent = mainPeople().filter(p => p.arrived).length;
-  document.getElementById("totalCount").textContent = mainPeople().length;
-  document.getElementById("mainTitle").textContent = currentFilter === "pending" ? "Pending list" : currentFilter === "arrived" ? "Arrived list" : "All passengers";
-
-  document.getElementById("list").innerHTML = filteredMain.map(personCard).join("") || `<p class="hint empty">No matching people in this list.</p>`;
-  document.getElementById("waitingList").innerHTML = filteredWaiting.map(waitingCard).join("") || `<p class="hint empty">Waiting list is empty.</p>`;
-  save();
+}
+function filteredWaiting() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  return waitingPeople().filter(p => !q || p.name.toLowerCase().includes(q) || p.phone.toLowerCase().includes(q));
 }
 
 function personCard(p) {
-  return `
-    <div class="person ${p.arrived ? "arrived" : ""}">
-      <div class="row">
-        <div>
-          <div class="name">${escapeHtml(p.name || "No name")}</div>
-          <div class="phone">${escapeHtml(p.phone || "No phone")}</div>
-          ${p.manual ? `<span class="tag">Moved from waiting list</span>` : ``}
-        </div>
-        <button class="${p.arrived ? "" : "success"} small" onclick="toggleArrived('${safeArg(p.id)}')">${p.arrived ? "Undo" : "Arrived"}</button>
-      </div>
-      <div class="actions">
-        <button class="small" onclick="copyPhone('${safeArg(p.phone)}')">Copy phone</button>
-        <a href="tel:${encodeURIComponent(p.phone)}"><button class="small">Call</button></a>
-        <button class="danger small" onclick="deletePerson('${safeArg(p.id)}')">Delete</button>
-      </div>
-    </div>`;
+  return `<div class="person ${p.arrived ? "arrived" : ""}">
+    <div class="row"><div class="person-main"><div class="avatar">${initialOf(p.name)}</div><div><div class="name">${escapeHtml(p.name || "No name")}</div><div class="phone">${escapeHtml(p.phone || "No phone")}</div>${p.manual ? `<span class="tag">Moved from waiting list</span>` : ``}</div></div>
+    <button class="${p.arrived ? "" : "success"} small" onclick="toggleArrived('${safeJs(p.id)}')">${p.arrived ? "Undo" : "Arrived"}</button></div>
+    <div class="actions"><button class="small" onclick="copyPhone('${safeJs(p.phone)}')">Copy phone</button><a href="tel:${encodeURIComponent(p.phone)}"><button class="small">Call</button></a><button class="danger small" onclick="deletePerson('${safeJs(p.id)}')">Delete</button></div>
+  </div>`;
 }
-
 function waitingCard(p) {
-  return `
-    <div class="person waiting">
-      <div class="row">
-        <div>
-          <div class="name">${escapeHtml(p.name || "No name")}</div>
-          <div class="phone">${escapeHtml(p.phone || "No phone")}</div>
-          <span class="tag waiting">Waiting list</span>
-        </div>
-        <button class="warning small" onclick="moveToMain('${safeArg(p.id)}')">Move to list</button>
-      </div>
-      <div class="actions">
-        <button class="small" onclick="copyPhone('${safeArg(p.phone)}')">Copy phone</button>
-        <a href="tel:${encodeURIComponent(p.phone)}"><button class="small">Call</button></a>
-        <button class="danger small" onclick="deletePerson('${safeArg(p.id)}')">Delete</button>
-      </div>
-    </div>`;
+  return `<div class="person waiting">
+    <div class="row"><div class="person-main"><div class="avatar">${initialOf(p.name)}</div><div><div class="name">${escapeHtml(p.name || "No name")}</div><div class="phone">${escapeHtml(p.phone || "No phone")}</div><span class="tag">Waiting list</span></div></div>
+    <button class="success small" onclick="moveToMain('${safeJs(p.id)}')">Move to list</button></div>
+    <div class="actions"><button class="small" onclick="copyPhone('${safeJs(p.phone)}')">Copy phone</button><a href="tel:${encodeURIComponent(p.phone)}"><button class="small">Call</button></a><button class="danger small" onclick="deletePerson('${safeJs(p.id)}')">Delete</button></div>
+  </div>`;
 }
 
-function escapeHtml(s) { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-function toggleArrived(id) { const p = people.find(x => x.id === id); if (p) p.arrived = !p.arrived; render(); }
-function moveToMain(id) { const p = people.find(x => x.id === id); if (p) { p.waiting = false; p.manual = true; p.arrived = false; currentFilter = "pending"; render(); } }
+function render() {
+  document.getElementById("tabPending").classList.toggle("active", currentView === "pending");
+  document.getElementById("tabArrived").classList.toggle("active", currentView === "arrived");
+  document.getElementById("tabAll").classList.toggle("active", currentView === "all");
+  document.getElementById("tabWaiting").classList.toggle("active", currentView === "waiting");
+  document.getElementById("pendingCount").textContent = mainPeople().filter(p => !p.arrived).length;
+  document.getElementById("arrivedCount").textContent = mainPeople().filter(p => p.arrived).length;
+  document.getElementById("totalCount").textContent = mainPeople().length;
+  document.getElementById("waitingCount").textContent = waitingPeople().length;
+  document.getElementById("mainSection").style.display = currentView === "waiting" ? "none" : "block";
+  document.getElementById("waitingSection").style.display = currentView === "waiting" ? "block" : "none";
+  const titles = { pending:"Pending", arrived:"Arrived", all:"All" };
+  document.getElementById("mainTitle").textContent = titles[currentView] || "Pending";
+  document.getElementById("list").innerHTML = filteredMain().map(personCard).join("") || `<p class="hint empty">No matching people in this list.</p>`;
+  document.getElementById("waitingList").innerHTML = filteredWaiting().map(waitingCard).join("") || `<p class="hint empty">Waiting list is empty.</p>`;
+  save();
+}
+
+function copyPhone(phone) { navigator.clipboard.writeText(phone).then(() => alert(`Copied: ${phone}`)); }
+function toggleArrived(id) { const p = people.find(x => x.id === id); if (p) { p.arrived = !p.arrived; render(); } }
 function deletePerson(id) { const p = people.find(x => x.id === id); if (p && confirm(`Delete ${p.name || p.phone}?`)) { p.deleted = true; render(); } }
+function moveToMain(id) { const p = people.find(x => x.id === id); if (p) { p.waiting = false; p.manual = true; p.arrived = false; people = sortByName(people); currentView = "pending"; render(); } }
 
-window.toggleArrived = toggleArrived;
-window.moveToMain = moveToMain;
-window.deletePerson = deletePerson;
-window.copyPhone = copyPhone;
-
+window.copyPhone = copyPhone; window.toggleArrived = toggleArrived; window.deletePerson = deletePerson; window.moveToMain = moveToMain;
 document.getElementById("search").addEventListener("input", render);
-document.getElementById("filterPending").addEventListener("click", () => { currentFilter = "pending"; render(); });
-document.getElementById("filterArrived").addEventListener("click", () => { currentFilter = "arrived"; render(); });
-document.getElementById("filterAll").addEventListener("click", () => { currentFilter = "all"; render(); });
+document.getElementById("tabPending").addEventListener("click", () => { currentView = "pending"; render(); });
+document.getElementById("tabArrived").addEventListener("click", () => { currentView = "arrived"; render(); });
+document.getElementById("tabAll").addEventListener("click", () => { currentView = "all"; render(); });
+document.getElementById("tabWaiting").addEventListener("click", () => { currentView = "waiting"; render(); });
 document.getElementById("addPerson").addEventListener("click", () => {
   const name = document.getElementById("newName").value.trim();
-  const phone = document.getElementById("newPhone").value.trim();
+  const phone = normalizePhone(document.getElementById("newPhone").value);
   if (!name && !phone) return alert("Add a name or phone.");
-  const p = { id: makeId(name, phone) + `|wait-${Date.now()}`, name, phone, arrived:false, deleted:false, manual:true, waiting:true };
-  people.unshift(p);
-  document.getElementById("newName").value = "";
-  document.getElementById("newPhone").value = "";
-  render();
+  people.push({ id: makeId(name, phone) + `|wait-${Date.now()}`, name, phone, arrived:false, deleted:false, manual:true, waiting:true });
+  people = sortByName(people);
+  document.getElementById("newName").value = ""; document.getElementById("newPhone").value = ""; render();
 });
-
 loadPeople();
 </script>
 </body>
