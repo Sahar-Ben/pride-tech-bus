@@ -100,6 +100,14 @@ function makeId(name, phone) { return `${String(name).trim().toLowerCase()}|${no
 function escapeHtml(s) { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function safeJs(s) { return String(s).replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
 
+function sortByName(list) {
+  return [...list].sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" }));
+}
+function initialOf(name) {
+  const clean = String(name || "?").trim();
+  return escapeHtml((clean[0] || "?").toUpperCase());
+}
+
 function parseCSV(text) {
   const rows = []; let row = [], value = "", inQuotes = false;
   for (let i = 0; i < text.length; i++) {
