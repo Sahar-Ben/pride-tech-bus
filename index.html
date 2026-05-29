@@ -126,7 +126,7 @@
 
 <script>
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7rhjt4HNMhz3tUzZMcFaqoxXVNHnO6Qg8mBkBcu6dmMOCGIP18OaEsTQXwgQ06uyqpgl-P5a9SxoO/pub?gid=1845266870&single=true&output=csv";
-const DATA_VERSION = "2026-05-29-v2";
+const DATA_VERSION = "2026-05-29-v3-approved-only";
 const STORAGE_KEY = `pride-tech-bus-${DATA_VERSION}`;
 
 let people = [];
@@ -158,13 +158,24 @@ function rowsToPeople(rows) {
   const headers = rows[0].map(h => String(h).trim().toLowerCase());
   const nameIndex = headers.findIndex(h => ["name","full name","שם","שם מלא"].includes(h) || h.includes("name") || h.includes("שם"));
   const phoneIndex = headers.findIndex(h => ["phone","mobile","telephone","טלפון","נייד"].includes(h) || h.includes("phone") || h.includes("טל") || h.includes("נייד"));
+  const statusIndex = headers.findIndex(h => ["status","סטטוס"].includes(h) || h.includes("status") || h.includes("סטטוס"));
   const fallbackName = nameIndex >= 0 ? nameIndex : 0;
   const fallbackPhone = phoneIndex >= 0 ? phoneIndex : 1;
-  return rows.slice(1).map(r => {
-    const name = String(r[fallbackName] || "").trim();
-    const phone = normalizePhone(r[fallbackPhone]);
-    return { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:false, waiting:false };
-  }).filter(p => p.name || p.phone);
+
+  return rows.slice(1)
+    .filter(r => {
+      // Only approved rows from the Google Sheet are allowed into the main list.
+      // Cancel / cancelled / empty / any other status are hidden automatically.
+      if (statusIndex < 0) return true;
+      const status = String(r[statusIndex] || "").trim().toLowerCase();
+      return status === "approved";
+    })
+    .map(r => {
+      const name = String(r[fallbackName] || "").trim();
+      const phone = normalizePhone(r[fallbackPhone]);
+      return { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:false, waiting:false };
+    })
+    .filter(p => p.name || p.phone);
 }
 
 function mergeWithSaved(freshPeople) {
