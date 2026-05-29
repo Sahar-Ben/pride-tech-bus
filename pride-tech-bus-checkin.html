@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pride Tech Bus Check-in</title>
+  <style>
+    :root { --bg:#f7f7fb; --card:#fff; --text:#15151f; --muted:#666; --accent:#6b3df4; --danger:#b42318; --ok:#067647; --border:#ddd; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); }
+    header { position:sticky; top:0; z-index:5; background:var(--card); padding:14px; border-bottom:1px solid var(--border); box-shadow:0 1px 8px rgba(0,0,0,.04); }
+    h1 { margin:0 0 10px; font-size:22px; }
+    .toolbar { display:grid; gap:10px; grid-template-columns:1fr; }
+    input, button { font:inherit; border-radius:12px; border:1px solid var(--border); padding:12px; }
+    input { width:100%; background:white; }
+    button { background:white; cursor:pointer; font-weight:700; }
+    button.primary { background:var(--accent); border-color:var(--accent); color:white; }
+    button.success { background:var(--ok); border-color:var(--ok); color:white; }
+    button.danger { color:var(--danger); border-color:#f3b4af; }
+    button.small { padding:9px 10px; font-size:14px; }
+    main { padding:14px; max-width:900px; margin:auto; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0; }
+    .stat { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:10px; text-align:center; }
+    .stat b { display:block; font-size:20px; }
+    .person { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:14px; margin:10px 0; box-shadow:0 1px 5px rgba(0,0,0,.03); }
+    .person.arrived { opacity:.55; }
+    .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .name { font-size:19px; font-weight:800; }
+    .phone { color:var(--muted); margin-top:4px; font-size:16px; direction:ltr; unicode-bidi:embed; }
+    .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .section-title { margin:24px 0 8px; font-size:18px; }
+    .add-box { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:14px; display:grid; gap:10px; }
+    .hint { color:var(--muted); font-size:13px; line-height:1.35; }
+    .hidden { display:none; }
+    @media (min-width:700px){ .toolbar { grid-template-columns:1fr auto auto; } .add-box { grid-template-columns:1fr 1fr auto; align-items:center; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pride Tech Bus Check-in</h1>
+    <div class="toolbar">
+      <input id="search" placeholder="Search by name or phone..." autocomplete="off" />
+      <button id="showAll" class="small">Show all</button>
+      <button id="showPending" class="small primary">Show only pending</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats">
+      <div class="stat"><b id="pendingCount">0</b>Pending</div>
+      <div class="stat"><b id="arrivedCount">0</b>Arrived</div>
+      <div class="stat"><b id="totalCount">0</b>Total</div>
+    </div>
+
+    <div id="status" class="hint"></div>
+    <div id="list"></div>
+
+    <h2 class="section-title">Add someone manually / waiting list</h2>
+    <div class="add-box">
+      <input id="newName" placeholder="Full name" />
+      <input id="newPhone" placeholder="Phone" inputmode="tel" />
+      <button id="addPerson" class="primary">Add</button>
+    </div>
+    <p class="hint">
+      This page saves check-ins, deletions, and manual additions on this iPad/browser only. To reset everything, clear this site’s browser data or change the DATA_VERSION number in the code.
+    </p>
+  </main>
+
+<script>
+// === SETTINGS ===
+// Published Google Sheets CSV for the Pride Tech bus list.
+// Update the Google Sheet, then refresh this page to pull the latest published CSV.
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT7rhjt4HNMhz3tUzZMcFaqoxXVNHnO6Qg8mBkBcu6dmMOCGIP18OaEsTQXwgQ06uyqpgl-P5a9SxoO/pub?gid=1845266870&single=true&output=csv";
+
+// Increase this if you want to force everyone using this page to reload fresh local state.
+const DATA_VERSION = "2026-05-29-v1";
+const STORAGE_KEY = `pride-tech-bus-${DATA_VERSION}`;
+
+let people = [];
+let showPendingOnly = true;
+
+function normalizePhone(phone) { return String(phone || "").trim(); }
+function makeId(name, phone) { return `${String(name).trim().toLowerCase()}|${normalizePhone(phone).replace(/\D/g,"")}`; }
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], value = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], n = text[i + 1];
+    if (c === '"' && inQuotes && n === '"') { value += '"'; i++; }
+    else if (c === '"') inQuotes = !inQuotes;
+    else if (c === ',' && !inQuotes) { row.push(value); value = ""; }
+    else if ((c === '\n' || c === '\r') && !inQuotes) {
+      if (value || row.length) { row.push(value); rows.push(row); row = []; value = ""; }
+      if (c === '\r' && n === '\n') i++;
+    } else value += c;
+  }
+  if (value || row.length) { row.push(value); rows.push(row); }
+  return rows;
+}
+
+function rowsToPeople(rows) {
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => String(h).trim().toLowerCase());
+  const nameIndex = headers.findIndex(h => ["name","full name","שם","שם מלא"].includes(h) || h.includes("name") || h.includes("שם"));
+  const phoneIndex = headers.findIndex(h => ["phone","mobile","telephone","טלפון","נייד"].includes(h) || h.includes("phone") || h.includes("טל") || h.includes("נייד"));
+  const fallbackName = nameIndex >= 0 ? nameIndex : 0;
+  const fallbackPhone = phoneIndex >= 0 ? phoneIndex : 1;
+  return rows.slice(1).map(r => {
+    const name = String(r[fallbackName] || "").trim();
+    const phone = normalizePhone(r[fallbackPhone]);
+    return { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:false };
+  }).filter(p => p.name || p.phone);
+}
+
+function mergeWithSaved(freshPeople) {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  if (!saved) return freshPeople;
+  const byId = new Map(saved.map(p => [p.id, p]));
+  const merged = freshPeople.map(p => ({ ...p, ...(byId.get(p.id) || {}) }));
+  const manual = saved.filter(p => p.manual && !merged.some(x => x.id === p.id));
+  return [...merged, ...manual];
+}
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(people)); }
+
+async function loadPeople() {
+  const status = document.getElementById("status");
+  try {
+    status.textContent = "Loading list from Google Sheets...";
+    const res = await fetch(CSV_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error("Could not load CSV. Publish the sheet to the web first.");
+    const csv = await res.text();
+    const fresh = rowsToPeople(parseCSV(csv));
+    people = mergeWithSaved(fresh);
+    status.textContent = `Loaded ${fresh.length} people from Google Sheets.`;
+  } catch (err) {
+    people = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    status.textContent = `Google Sheets was not loaded. Using saved local list only. ${err.message}`;
+  }
+  render();
+}
+
+function copyPhone(phone) {
+  navigator.clipboard.writeText(phone).then(() => alert(`Copied: ${phone}`));
+}
+
+function render() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const visible = people.filter(p => !p.deleted)
+    .filter(p => !showPendingOnly || !p.arrived)
+    .filter(p => !q || p.name.toLowerCase().includes(q) || p.phone.toLowerCase().includes(q));
+
+  document.getElementById("pendingCount").textContent = people.filter(p => !p.deleted && !p.arrived).length;
+  document.getElementById("arrivedCount").textContent = people.filter(p => !p.deleted && p.arrived).length;
+  document.getElementById("totalCount").textContent = people.filter(p => !p.deleted).length;
+
+  const list = document.getElementById("list");
+  list.innerHTML = visible.map(p => `
+    <div class="person ${p.arrived ? "arrived" : ""}">
+      <div class="row">
+        <div>
+          <div class="name">${escapeHtml(p.name || "No name")}</div>
+          <div class="phone">${escapeHtml(p.phone || "No phone")}</div>
+        </div>
+        <button class="${p.arrived ? "" : "success"} small" onclick="toggleArrived('${p.id.replace(/'/g,"\\'")}')">${p.arrived ? "Undo" : "Arrived"}</button>
+      </div>
+      <div class="actions">
+        <button class="small" onclick="copyPhone('${String(p.phone).replace(/'/g,"\\'")}')">Copy phone</button>
+        <a href="tel:${encodeURIComponent(p.phone)}"><button class="small">Call</button></a>
+        <button class="danger small" onclick="deletePerson('${p.id.replace(/'/g,"\\'")}')">Delete</button>
+      </div>
+    </div>
+  `).join("") || `<p class="hint">No matching people.</p>`;
+  save();
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function toggleArrived(id) { const p = people.find(x => x.id === id); if (p) p.arrived = !p.arrived; render(); }
+function deletePerson(id) { const p = people.find(x => x.id === id); if (p && confirm(`Delete ${p.name || p.phone}?`)) { p.deleted = true; render(); } }
+
+window.toggleArrived = toggleArrived;
+window.deletePerson = deletePerson;
+window.copyPhone = copyPhone;
+
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("showAll").addEventListener("click", () => { showPendingOnly = false; render(); });
+document.getElementById("showPending").addEventListener("click", () => { showPendingOnly = true; render(); });
+document.getElementById("addPerson").addEventListener("click", () => {
+  const name = document.getElementById("newName").value.trim();
+  const phone = document.getElementById("newPhone").value.trim();
+  if (!name && !phone) return alert("Add a name or phone.");
+  const p = { id: makeId(name, phone), name, phone, arrived:false, deleted:false, manual:true };
+  people.unshift(p);
+  document.getElementById("newName").value = "";
+  document.getElementById("newPhone").value = "";
+  render();
+});
+
+loadPeople();
+</script>
+</body>
+</html>
